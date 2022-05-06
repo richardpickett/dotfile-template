@@ -1,0 +1,36 @@
+#!/bin/bash
+
+exit
+
+# How to use this file:
+#
+# 1. cp this file to a new name, the format is install_###_NAME_THAT_MAKES_SENSE_TO_YOU.sh
+#    (note, this file intentionally doesn't have .sh on it, but your copy should)
+# 2. use one of the below samples, changing the names to protect the innocent, or write your own code
+# 3. make sure you "exit" on success and "exit 1" on fail - that's how the installer will know to stop and let you examine the error
+#    the exit code of the last command that runs will be the exit code of the script, so you may not need to call exit
+#    but when in doubt, you can always force the return code to be 0 (default/true) or 1 (fail)
+# 4. delete the "exit" above
+# 5. delete these lines
+
+# if you need a script to run as a user other than root, you can do the following at the top of the script:
+
+if [ "my_user" != "$(whoami)" ]; then
+    su -l my_user -c "${0} ${@}" || exit # exit success
+    exit 1                               # exit fail
+fi
+
+# here's an example of checking if a command exists (ssh server), and if it doesn't, installing the correct package:
+
+which sshd &>/dev/null || apt install openssh-server && exit
+
+# here's an example of installing syncthing if it doesn't exist, which consists of more than just apt install:
+
+which syncthing &>/dev/null && exit # exit if it's installed
+# not installed, let's install it:
+echo "deb https://apt.syncthing.net/ syncthing stable" | tee /etc/apt/sources.list.d/syncthing.list &&
+    curl -s https://syncthing.net/release-key.txt | sudo apt-key add - &&
+    apt update &&
+    apt install syncthing &&
+    systemctl enable syncthing@username.service &&
+    exit
